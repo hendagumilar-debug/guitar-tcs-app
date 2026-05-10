@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Guitar Tutorial Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Space+Mono&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0a0a;color:#fff;font-family:Georgia,serif;min-height:100vh;padding-bottom:48px}
+  h1{font-family:'Playfair Display',Georgia,serif;background:linear-gradient(90deg,#f0c040,#e07020);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .mono{font-family:'Space Mono',monospace}
+  header{background:linear-gradient(180deg,#111 0%,#0a0a0a 100%);border-bottom:1px solid #1a1208;padding:20px 24px;margin-bottom:22px}
+  .wrap{max-width:680px;margin:0 auto;padding:0 16px}
+  .card{background:#111;border:1px solid #1e1e1e;border-radius:14px;padding:16px;margin-bottom:14px}
+  .label{color:#555;font-size:9px;letter-spacing:2px;font-family:'Space Mono',monospace;display:block;margin-bottom:7px;text-transform:uppercase}
+  .input-row{display:flex;gap:8px}
+  input[type=text]{flex:1;background:#0a0a0a;border:1px solid #2a2010;border-radius:8px;padding:10px 13px;color:#fff;font-size:14px;font-family:Georgia,serif;outline:none;width:100%}
+  input::placeholder{color:#444}
+  .btn-gold{background:linear-gradient(135deg,#f0c040,#e07020);border:none;border-radius:8px;padding:10px 16px;color:#1a1208;font-weight:700;font-size:12px;cursor:pointer;font-family:'Space Mono',monospace;white-space:nowrap}
+  .btn-gold:disabled{background:#1a1208;color:#555;cursor:not-allowed}
+  .btn-outline{background:transparent;border:1px solid #1e1e1e;border-radius:20px;padding:2px 8px;color:#444;font-size:9px;cursor:pointer;font-family:'Space Mono',monospace;transition:all 0.15s}
+  .btn-outline:hover{border-color:#f0c040;color:#f0c040}
+  .chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:9px}
+  .tutorial-card{background:linear-gradient(135deg,#0f0f0f 0%,#1a1208 50%,#0f0f0f 100%);border:1px solid #2a2010;border-radius:16px;padding:26px 22px;min-height:440px;position:relative;overflow:hidden}
+  .tutorial-glow{position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(240,192,64,0.07) 0%,transparent 70%);pointer-events:none}
+  .step-content{display:flex;gap:18px;align-items:flex-start;margin-top:16px}
+  .chord-box{background:#111;border:1px solid #2a2010;border-radius:12px;padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:172px}
+  .chord-name{color:#f0c040;font-size:16px;font-weight:700;font-family:'Playfair Display',Georgia,serif;text-align:center}
+  .step-text{flex:1}
+  .step-label{color:#f0c040;font-size:10px;font-family:'Space Mono',monospace;letter-spacing:1px;text-transform:uppercase;opacity:0.6;margin-bottom:8px}
+  .step-title{color:#fff;font-size:16px;font-family:'Playfair Display',Georgia,serif;margin-bottom:10px}
+  .step-desc{color:#ccc;font-size:13px;line-height:1.8;font-family:Georgia,serif}
+  .tips-box{background:rgba(240,192,64,0.05);border:1px solid rgba(240,192,64,0.18);border-left:3px solid #f0c040;border-radius:0 8px 8px 0;padding:8px 12px;margin-top:10px}
+  .tips-label{color:#f0c040;font-size:9px;letter-spacing:2px;font-family:'Space Mono',monospace;margin-bottom:3px}
+  .tips-text{color:#bbb;font-size:12px;font-family:Georgia,serif;line-height:1.6}
+  .fingers{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+  .finger-tag{background:#1a1208;border:1px solid #3a2010;border-radius:5px;padding:2px 8px;color:#f0c040;font-size:10px;font-family:'Space Mono',monospace}
+  .progress-bar{background:#1a1208;border-radius:4px;height:4px;overflow:hidden;margin-top:18px}
+  .progress-fill{background:linear-gradient(90deg,#f0c040,#e07020);height:100%;border-radius:4px;transition:width 0.5s ease}
+  .controls{display:flex;gap:7px;margin-top:10px}
+  .btn-play{flex:1;background:linear-gradient(135deg,#f0c040,#e07020);border:none;border-radius:9px;padding:12px;color:#1a1208;font-weight:700;font-size:13px;cursor:pointer;font-family:'Space Mono',monospace}
+  .btn-stop{flex:1;background:#1a1208;border:1px solid #3a2010;border-radius:9px;padding:12px;color:#f0c040;font-weight:700;font-size:13px;cursor:pointer;font-family:'Space Mono',monospace}
+  .btn-nav{background:#111;border:1px solid #1e1e1e;border-radius:9px;padding:12px 15px;color:#999;cursor:pointer;font-family:'Space Mono',monospace;font-size:14px}
+  .btn-nav:disabled{color:#222;cursor:not-allowed}
+  .speed-row{background:#111;border:1px solid #1a1208;border-radius:9px;padding:10px 14px;margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .speed-btn{background:transparent;border:1px solid #222;border-radius:5px;padding:3px 9px;color:#444;font-size:10px;cursor:pointer;font-family:'Space Mono',monospace}
+  .speed-btn.active{background:#2a2010;border-color:#f0c040;color:#f0c040}
+  .btn-record{width:100%;background:linear-gradient(135deg,#c080e0,#8040c0);border:none;border-radius:10px;padding:14px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:'Space Mono',monospace;margin-top:8px}
+  .btn-recording{background:linear-gradient(135deg,#e04020,#c02010)!important;animation:recordPulse 1.5s ease-in-out infinite}
+  .status-box{background:rgba(192,128,224,0.06);border:1px solid rgba(192,128,224,0.2);border-radius:8px;padding:8px 14px;color:#c080e0;font-size:12px;font-family:'Space Mono',monospace;text-align:center;margin-top:8px}
+  .status-box.ok{color:#80d8a0}
+  .status-box.err{color:#e07060}
+  .hint-box{background:rgba(192,128,224,0.04);border:1px solid rgba(192,128,224,0.12);border-radius:9px;padding:10px 13px;margin-top:8px;display:flex;gap:9px;align-items:flex-start}
+  .hint-text{color:#555;font-size:10px;font-family:'Space Mono',monospace;line-height:1.7}
+  .empty{text-align:center;padding:40px 24px;color:#222;font-family:'Space Mono',monospace;font-size:11px}
+  .loading{background:#111;border:1px solid #1a1208;border-radius:14px;padding:26px;display:flex;flex-direction:column;gap:12px;align-items:center}
+  .shimmer{height:9px;border-radius:5px;background:linear-gradient(90deg,#1a1208 25%,#2a2010 50%,#1a1208 75%);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite}
+  .counter{background:#1a1208;border:1px solid #3a2a10;border-radius:7px;padding:4px 11px;color:#f0c040;font-size:11px;font-family:'Space Mono',monospace}
+  .error-box{background:#1a0808;border:1px solid #3a1010;border-radius:8px;padding:9px 13px;color:#e07060;font-size:12px;margin-bottom:10px;font-family:'Space Mono',monospace}
+  @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+  @keyframes recordPulse{0%,100%{box-shadow:0 0 0 0 rgba(192,64,32,0.5)}50%{box-shadow:0 0 0 10px rgba(192,64,32,0)}}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spinner{display:inline-block;width:10px;height:10px;border:2px solid #333;border-top-color:#f0c040;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:6px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:3px">
+      <span style="font-size:24px">🎸</span>
+      <div>
+        <h1 style="font-size:19px">Guitar Tutorial Generator</h1>
+        <div class="mono" style="color:#444;font-size:9px;letter-spacing:2px;margin-top:2px">BRAND CREATORS ID • AI POWERED • 65+ CHORDS</div>
+      </div>
+    </div>
+    <p class="mono" style="color:#444;font-size:11px">Input topik → Generate → Rekam video → Upload 🚀</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- Input -->
+  <div class="card">
+    <label class="label">Topik Tutorial</label>
+    <div class="input-row">
+      <input type="text" id="topicInput" placeholder="contoh: Chord Am untuk pemula..." onkeydown="if(event.key==='Enter')generate()"/>
+      <button class="btn-gold" id="genBtn" onclick="generate()">✦ Generate</button>
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div id="errorBox" style="display:none" class="error-box"></div>
+  <div id="loadingBox" style="display:none" class="loading">
+    <div style="font-size:28px">🎸</div>
+    <div class="mono" style="color:#555;font-size:11px">AI sedang menyusun tutorial...</div>
+    <div class="shimmer" style="width:70%"></div>
+    <div class="shimmer" style="width:50%;animation-delay:0.15s"></div>
+    <div class="shimmer" style="width:80%;animation-delay:0.3s"></div>
+  </div>
+
+  <!-- Tutorial Display -->
+  <div id="tutorialBox" style="display:none">
+    <div class="tutorial-card">
+      <div class="tutorial-glow"></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between">
+        <div>
+          <div class="mono" style="color:#f0c040;font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px">🎸 Guitar Tutorial</div>
+          <h2 id="tutTitle" style="font-size:19px;font-weight:700;font-family:'Playfair Display',Georgia,serif;line-height:1.3"></h2>
+          <div id="tutMeta" class="mono" style="color:#444;font-size:10px;margin-top:4px"></div>
+        </div>
+        <div class="counter" id="stepCounter">1 / 1</div>
+      </div>
+      <div class="step-content" id="stepContent"></div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+
+    <!-- Speed control -->
+    <div class="speed-row">
+      <span class="mono" style="color:#444;font-size:10px;white-space:nowrap">⏱ Durasi per slide:</span>
+      <button class="speed-btn" onclick="setSpeed(3000)">3s</button>
+      <button class="speed-btn active" onclick="setSpeed(5000)">5s</button>
+      <button class="speed-btn" onclick="setSpeed(7000)">7s</button>
+      <button class="speed-btn" onclick="setSpeed(10000)">10s</button>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="btn-play" id="playBtn" onclick="togglePlay()">▶ Auto Slide Preview</button>
+      <button class="btn-nav" id="prevBtn" onclick="prevStep()">◀</button>
+      <button class="btn-nav" id="nextBtn" onclick="nextStep()">▶</button>
+    </div>
+
+    <!-- Record -->
+    <button class="btn-record" id="recordBtn" onclick="toggleRecord()">🎬 Rekam & Export Video (.webm)</button>
+    <div id="statusBox" style="display:none" class="status-box"></div>
+
+    <!-- Hint -->
+    <div class="hint-box">
+      <span style="font-size:14px;margin-top:1px">📋</span>
+      <div class="hint-text">
+        <span style="color:#c080e0;font-weight:bold">Cara export video:</span><br>
+        1. Generate tutorial → atur durasi slide<br>
+        2. Klik <span style="color:#c080e0">🎬 Rekam & Export Video</span><br>
+        3. Pilih <span style="color:#f0c040">"Tab ini"</span> saat dialog muncul<br>
+        4. Tunggu semua slide selesai otomatis<br>
+        5. File .webm tersimpan → upload ke Facebook/TikTok
+      </div>
+    </div>
+  </div>
+
+  <div id="emptyBox" class="empty">
+    <div style="font-size:40px;margin-bottom:12px;opacity:0.15">🎸</div>
+    <div>Input topik di atas dan tekan Generate</div>
+  </div>
+</div>
+
+<script>
+const CHORD_DB = {
+  "C":    [-1,3,2,0,1,0], "C#":  [-1,4,3,1,2,1], "D":  [-1,-1,0,2,3,2],
+  "D#":   [-1,-1,1,3,4,3],"E":   [0,2,2,1,0,0],  "F":  [1,1,2,3,3,1],
+  "F#":   [2,2,3,4,4,2],  "G":   [3,2,0,0,0,3],  "G#": [4,3,1,1,1,4],
+  "A":    [-1,0,2,2,2,0], "A#":  [-1,1,3,3,3,1], "B":  [-1,2,4,4,4,2],
+  "Am":   [-1,0,2,2,1,0], "A#m": [-1,1,3,3,2,1], "Bm": [-1,2,4,4,3,2],
+  "Cm":   [-1,3,5,5,4,3], "C#m": [-1,4,6,6,5,4], "Dm": [-1,-1,0,2,3,1],
+  "Em":   [0,2,2,0,0,0],  "Fm":  [1,1,3,3,2,1],  "F#m":[2,2,4,4,3,2],
+  "Gm":   [3,3,5,5,4,3],  "G#m": [4,4,6,6,5,4],
+  "C7":   [-1,3,2,3,1,0], "D7":  [-1,-1,0,2,1,2],"E7": [0,2,0,1,0,0],
+  "F7":   [1,1,2,1,3,1],  "G7":  [3,2,0,0,0,1],  "A7": [-1,0,2,0,2,0],
+  "B7":   [-1,2,1,2,0,2],
+  "Am7":  [-1,0,2,0,1,0], "Bm7": [-1,2,4,2,3,2], "Dm7":[-1,-1,0,2,1,1],
+  "Em7":  [0,2,0,0,0,0],  "Gm7": [3,3,5,3,4,3],
+  "Cmaj7":[-1,3,2,0,0,0], "Dmaj7":[-1,-1,0,2,2,2],"Emaj7":[0,2,1,1,0,0],
+  "Gmaj7":[3,2,0,0,0,2],  "Amaj7":[-1,0,2,1,2,0],
+  "Dsus2":[-1,-1,0,2,3,0],"Dsus4":[-1,-1,0,2,3,3],"Asus2":[-1,0,2,2,0,0],
+  "Asus4":[-1,0,2,2,3,0], "Esus4":[0,2,2,2,0,0],
+  "Cadd9":[-1,3,2,0,3,0], "Gadd9":[3,0,0,0,0,3],
+  "E5":   [0,2,2,-1,-1,-1],"A5":  [-1,0,2,2,-1,-1],"D5":[-1,-1,0,2,3,-1],
+  "G5":   [3,5,5,-1,-1,-1],"B5":  [-1,2,4,4,-1,-1]
+};
+
+const STRINGS = ["E","A","D","G","B","e"];
+const EXAMPLES = ["Chord C Mayor pemula","Progression Am F C G","Barre chord F Mayor","Fingerpicking dasar","Chord 7th jazz","Power chord rock"];
+
+let tutorialData = null, currentStep = 0, isPlaying = false, stepDuration = 5000;
+let playInterval = null, mediaRecorder = null, recordChunks = [], recordStream = null, isRecording = false;
+
+// Init chips
+const chipsEl = document.getElementById("chips");
+EXAMPLES.forEach(ex => {
+  const b = document.createElement("button");
+  b.className = "btn-outline"; b.textContent = ex;
+  b.onclick = () => { document.getElementById("topicInput").value = ex; };
+  chipsEl.appendChild(b);
+});
+
+function setSpeed(ms) {
+  stepDuration = ms;
+  document.querySelectorAll(".speed-btn").forEach(b => {
+    b.classList.toggle("active", parseInt(b.textContent)*1000 === ms);
+  });
+}
+
+async function generate() {
+  const topic = document.getElementById("topicInput").value.trim();
+  if (!topic) return;
+  document.getElementById("errorBox").style.display = "none";
+  document.getElementById("loadingBox").style.display = "flex";
+  document.getElementById("tutorialBox").style.display = "none";
+  document.getElementById("emptyBox").style.display = "none";
+  document.getElementById("genBtn").disabled = true;
+  document.getElementById("genBtn").innerHTML = '<span class="spinner"></span>Proses...';
+  stopPlay(); currentStep = 0;
+
+  try {
+    const res = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic, availableChords: Object.keys(CHORD_DB).join(", ") })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "API error");
+    tutorialData = data;
+    renderTutorial();
+  } catch(err) {
+    document.getElementById("errorBox").textContent = "⚠ " + err.message;
+    document.getElementById("errorBox").style.display = "block";
+    document.getElementById("emptyBox").style.display = "block";
+  } finally {
+    document.getElementById("loadingBox").style.display = "none";
+    document.getElementById("genBtn").disabled = false;
+    document.getElementById("genBtn").textContent = "✦ Generate";
+  }
+}
+
+function renderTutorial() {
+  if (!tutorialData) return;
+  document.getElementById("tutorialBox").style.display = "block";
+  document.getElementById("emptyBox").style.display = "none";
+  document.getElementById("tutTitle").textContent = tutorialData.title || "";
+  document.getElementById("tutMeta").textContent = (tutorialData.level || "") + " • " + (tutorialData.duration || "");
+  renderStep();
+}
+
+function renderStep() {
+  const steps = tutorialData?.steps || [];
+  const step = steps[currentStep] || {};
+  document.getElementById("stepCounter").textContent = (currentStep+1) + " / " + steps.length;
+  document.getElementById("progressFill").style.width = ((currentStep+1)/steps.length*100) + "%";
+  document.getElementById("prevBtn").disabled = currentStep === 0;
+  document.getElementById("nextBtn").disabled = currentStep >= steps.length - 1;
+
+  let chordHtml = "";
+  if (step.chord && CHORD_DB[step.chord]) {
+    chordHtml = `<div class="chord-box">${drawChord(step.chord, CHORD_DB[step.chord])}<div class="chord-name">${step.chord}</div></div>`;
+  }
+
+  let fingersHtml = "";
+  if (step.fingers && step.fingers.length) {
+    fingersHtml = '<div class="fingers">' + step.fingers.map(f=>`<div class="finger-tag">${f}</div>`).join("") + "</div>";
+  }
+
+  document.getElementById("stepContent").innerHTML = `
+    ${chordHtml}
+    <div class="step-text">
+      <div class="step-label">Langkah ${currentStep+1}</div>
+      <div class="step-title">${step.title||""}</div>
+      <div class="step-desc">${step.description||""}</div>
+      ${step.tips ? `<div class="tips-box"><div class="tips-label">💡 TIPS</div><div class="tips-text">${step.tips}</div></div>` : ""}
+      ${fingersHtml}
+    </div>`;
+}
+
+function drawChord(name, frets) {
+  const SS=32, FS=34, PAD={top:46,left:40,right:18,bottom:16};
+  const W=PAD.left+5*SS+PAD.right, H=PAD.top+5*FS+PAD.bottom;
+  const active=frets.filter(f=>f>0);
+  const minF=active.length>0?Math.min(...active):0;
+  const sf=minF>1?minF:1;
+  const colors=["#f0c040","#e07060","#70b8e0","#80d8a0","#c080e0"];
+
+  let svg=`<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
+  if(sf===1) svg+=`<rect x="${PAD.left-4}" y="${PAD.top-5}" width="${5*SS+8}" height="6" rx="3" fill="#f0c040"/>`;
+  else svg+=`<text x="${PAD.left-12}" y="${PAD.top+FS*0.5+4}" text-anchor="end" fill="#aaa" font-size="11" font-family="monospace">${sf}fr</text>`;
+
+  for(let i=0;i<=5;i++) svg+=`<line x1="${PAD.left}" y1="${PAD.top+i*FS}" x2="${PAD.left+5*SS}" y2="${PAD.top+i*FS}" stroke="${i===0?"#555":"#333"}" stroke-width="${i===0?1.5:1}"/>`;
+  for(let i=0;i<6;i++){
+    svg+=`<line x1="${PAD.left+i*SS}" y1="${PAD.top}" x2="${PAD.left+i*SS}" y2="${PAD.top+5*FS}" stroke="#444" stroke-width="${i===0||i===5?2:1.2}"/>`;
+    svg+=`<text x="${PAD.left+i*SS}" y="${PAD.top-12}" text-anchor="middle" fill="#666" font-size="9" font-family="monospace">${STRINGS[i]}</text>`;
+  }
+
+  frets.forEach((fret,i)=>{
+    const cx=PAD.left+i*SS, cy=PAD.top-27;
+    if(fret===0) svg+=`<text x="${cx}" y="${cy+4}" text-anchor="middle" fill="#80d8a0" font-size="14">○</text>`;
+    else if(fret===-1) svg+=`<text x="${cx}" y="${cy+4}" text-anchor="middle" fill="#e07060" font-size="12">✕</text>`;
+    else{
+      const rel=fret-sf+1;
+      if(rel>=1&&rel<=5){
+        const fx=cx, fy=PAD.top+(rel-0.5)*FS;
+        svg+=`<circle cx="${fx}" cy="${fy}" r="12" fill="${colors[i%colors.length]}" opacity="0.9"/>`;
+        svg+=`<text x="${fx}" y="${fy+4}" text-anchor="middle" fill="#1a1208" font-size="10" font-weight="bold" font-family="monospace">${i+1}</text>`;
+      }
+    }
+  });
+  svg+="</svg>";
+  return svg;
+}
+
+function togglePlay() {
+  if(isPlaying) stopPlay(); else startPlay();
+}
+function startPlay() {
+  isPlaying=true;
+  currentStep=0; renderStep();
+  document.getElementById("playBtn").textContent="⏹ Stop";
+  document.getElementById("playBtn").className="btn-stop";
+  playInterval=setInterval(()=>{
+    if(currentStep>=(tutorialData?.steps?.length||1)-1){stopPlay();return;}
+    currentStep++; renderStep();
+  },stepDuration);
+}
+function stopPlay() {
+  isPlaying=false;
+  clearInterval(playInterval);
+  const pb=document.getElementById("playBtn");
+  if(pb){pb.textContent="▶ Auto Slide Preview";pb.className="btn-play";}
+}
+function prevStep(){if(currentStep>0){currentStep--;renderStep();}}
+function nextStep(){if(currentStep<(tutorialData?.steps?.length||1)-1){currentStep++;renderStep();}}
+
+async function toggleRecord() {
+  if(isRecording) stopRecord(); else startRecord();
+}
+async function startRecord() {
+  try{
+    showStatus("Meminta akses layar...");
+    const stream = await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30},audio:false});
+    recordStream = stream;
+    const mr = new MediaRecorder(stream,{
+      mimeType: MediaRecorder.isTypeSupported("video/webm;codecs=vp9")?"video/webm;codecs=vp9":"video/webm"
+    });
+    mediaRecorder=mr; recordChunks=[];
+    mr.ondataavailable=e=>{if(e.data.size>0)recordChunks.push(e.data);};
+    mr.onstop=()=>{
+      const blob=new Blob(recordChunks,{type:"video/webm"});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;a.download="guitar-tutorial-"+Date.now()+".webm";a.click();
+      URL.revokeObjectURL(url);
+      showStatus("✅ Video tersimpan di Downloads!","ok");
+      setRecordState(false);
+      setTimeout(()=>document.getElementById("statusBox").style.display="none",5000);
+    };
+    stream.getVideoTracks()[0].onended=()=>{mr.stop();setRecordState(false);};
+
+    // Countdown
+    for(let i=3;i>=1;i--){showStatus("⏳ Mulai dalam "+i+"...");await sleep(1000);}
+    mr.start(); setRecordState(true); showStatus("🔴 Sedang merekam...");
+    currentStep=0; renderStep();
+    const steps=tutorialData?.steps||[];
+    for(let i=0;i<steps.length;i++){currentStep=i;renderStep();await sleep(stepDuration);}
+    mr.stop(); stream.getTracks().forEach(t=>t.stop());
+  }catch(err){
+    if(err.name==="NotAllowedError") showStatus("❌ Akses layar ditolak.","err");
+    else showStatus("❌ Error: "+err.message,"err");
+    setRecordState(false);
+  }
+}
+function stopRecord(){
+  mediaRecorder?.stop();
+  recordStream?.getTracks().forEach(t=>t.stop());
+  setRecordState(false);
+}
+function setRecordState(rec){
+  isRecording=rec;
+  const btn=document.getElementById("recordBtn");
+  btn.textContent=rec?"⏹ Stop & Simpan Video":"🎬 Rekam & Export Video (.webm)";
+  btn.className=rec?"btn-record btn-recording":"btn-record";
+}
+function showStatus(msg,type=""){
+  const el=document.getElementById("statusBox");
+  el.textContent=msg; el.style.display="block";
+  el.className="status-box"+(type?" "+type:"");
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+</script>
+</body>
+</html>
